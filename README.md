@@ -1,7 +1,7 @@
 # BinSq
 Gridded dot map technique for tackling visual clutter in discrete geographic data.
 
-![Standard dot map vs BinSq](https://pbs.twimg.com/media/CgpfxDaWwAIKyYx.jpg:large)
+![Standard dot map vs BinSq](https://41.media.tumblr.com/b5b2ce9e0e6beecc8005b1db1138c3d2/tumblr_o69npgOlsG1rgerafo2_r1_1280.png)
 
 This is a rudimentary implementation of BinSq in processing-java for release alongside our publication. Processing (see [http://www.processing.org](http://www.processing.org)) is required to compile this version. Files with *.java* extension will be part of a larger geotools package to be released in the near future.
 
@@ -11,11 +11,12 @@ The key components of the technique are illustrated in the image above. Please r
 
 Do cite the paper if you find it useful.
 
-@article{chua2016binsq,
-  title={BinSq: visualizing geographic dot density patterns with gridded maps},
-  author={Chua, Alvin and Vande Moere, Andrew},
-  journal={Cartography and Geographic Information Science},
-  pages={1--20},
-  year={2016},
-  publisher={Taylor \& Francis}
-}
+    // Bibtex
+    @article{chua2016binsq,
+        title={BinSq: visualizing geographic dot density patterns with gridded maps},
+        author={Chua, Alvin and Vande Moere, Andrew},
+        journal={Cartography and Geographic Information Science},
+        pages={1--20},
+        year={2016},
+        publisher={Taylor \& Francis}
+    }
