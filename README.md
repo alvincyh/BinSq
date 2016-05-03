@@ -3,9 +3,9 @@ Gridded dot map technique for tackling visual clutter in discrete geographic dat
 
 ![Standard dot map vs BinSq](https://41.media.tumblr.com/b5b2ce9e0e6beecc8005b1db1138c3d2/tumblr_o69npgOlsG1rgerafo2_r1_1280.png)
 
-![Standard dot map](https://67.media.tumblr.com/768f9e03aa0d5802292deacdfb83365b/tumblr_o69npgOlsG1rgerafo3_r1_540.jpg)
+![Standard dot map](https://67.media.tumblr.com/768f9e03aa0d5802292deacdfb83365b/tumblr_o69npgOlsG1rgerafo3_r1_1280.jpg)
 
-![BinSq](https://66.media.tumblr.com/ebd5fe5213cae5e1600e85b6241cc0e5/tumblr_o69npgOlsG1rgerafo4_r1_540.jpg)
+![BinSq](https://67.media.tumblr.com/ebd5fe5213cae5e1600e85b6241cc0e5/tumblr_o69npgOlsG1rgerafo4_r1_1280.jpg)
 
 This is a rudimentary implementation of BinSq in processing-java for release alongside our publication. Processing (see [http://www.processing.org](http://www.processing.org)) is required to compile this version. Files with *.java* extension will be part of a larger geotools package to be released in the near future.
 
