@@ -13,6 +13,7 @@ This is a rudimentary implementation of BinSq in processing-java for release alo
 
 The key components of the technique are illustrated in the image above. Steps 1 to 4 depict the transformation from a geographically accurate but cluttered representation, to a visual outcome optimal for comparing categorical and density differences. 
 
+    Steps:
     1. Data visualised with geographically accurate dot map.
     2. Data is binned to a density approximating grid.
     3. Data is equalised.
