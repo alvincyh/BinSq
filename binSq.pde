@@ -25,11 +25,13 @@ boolean isGrid	   = false;
 boolean isGeo	   = false;
 
 
-void setup(){
-
-    // initialise
+void settings() {
     size(512,512);
     pixelDensity(displayDensity());
+}
+
+void setup(){
+
     rectMode(CENTER);
     noFill();
     noLoop();
