@@ -67,7 +67,6 @@ void setup(){
 	// create a uniform grid  
 	// by paritioning evenly
 	nestedbins = new LinkedHashMap<Cell,Grid>();
-	Map<Integer,Grid> cache = new HashMap<Integer,Grid>();
 	for(Cell c : bins.getCells()){
 		int bestFit = getBestFit(c.count);
 		int nRecur  = c.level + bestFit;
@@ -77,9 +76,7 @@ void setup(){
 		}
 		int nCells  = getNumCells(bestFit);
 		int nIndex  = nCells * c.id;
-		Grid temp = null;
-		if(cache.containsKey(bestFit)) temp = cache.get(bestFit);
-		else temp = Uniform.partition(gridDim, gridDim, gridDim, gridDim, nRecur);
+		Grid temp = Uniform.partition(gridDim, gridDim, gridDim, gridDim, nRecur);
 		List<Cell> subset = new ArrayList<Cell>();
 		for (int i = nIndex; i < (nIndex + nCells); i++) {
 			Cell nc = temp.getCells().get(i);
