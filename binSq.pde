@@ -14,15 +14,13 @@ Map<Cell,Grid> nestedbins;
 List<Dot> dots;
 
 // histograms
-Map<Cell,Map<Cell,List<Integer>>> values;
-Map<Cell,Map<Integer,Integer>> visible;
-Map<Cell,Map<Integer,Integer>> actual;
-Map<Cell,Integer> equalize;
+Map<Cell,Map<Cell,List<Integer>>> values; // Dot values in each nested bin
+Map<Cell,Integer> equalize; // Final product 
 
 // track events
 boolean isEqualise = true;
 boolean isGrid	   = false;
-boolean isGeo	   = false;
+boolean isGeo	     = false;
 
 
 void settings() {
@@ -50,114 +48,35 @@ void setup(){
     }
 
 	// initalise histograms
-	values   = new HashMap(); // Dot values in each nested bin
-	visible  = new HashMap(); // Visible histogram of each bin
-	actual   = new HashMap(); // Actual histogram of each bin
-	equalize = new HashMap(); // Final product	
+	equalize = new HashMap();
 
 	// create a variable grid  
 	// with QuadTree paritioning
 	bins = QuadTree.partition(
 		new ArrayList<PVector>(dots),
-	    new PVector(gridDim, gridDim), 
-	    gridDim, gridDim, varPartitionLimit, maxDots
+	  new PVector(gridDim, gridDim), 
+	  gridDim, gridDim, varPartitionLimit, maxDots
 	);
 	println("1. Variable grid created.");
 
 	// create a uniform grid  
 	// by paritioning evenly
-	nestedbins = new LinkedHashMap<Cell,Grid>();
-	for(Cell c : bins.getCells()){
-		int bestFit = getBestFit(c.count);
-		int nRecur  = c.level + bestFit;
-		if(nRecur > uniPartitionLimit){
-			bestFit = uniPartitionLimit - c.level;
-			nRecur  = c.level + bestFit;
-		}
-		int nCells  = getNumCells(bestFit);
-		int nIndex  = nCells * c.id;
-		Grid temp = Uniform.partition(gridDim, gridDim, gridDim, gridDim, nRecur);
-		List<Cell> subset = new ArrayList<Cell>();
-		for (int i = nIndex; i < (nIndex + nCells); i++) {
-			Cell nc = temp.getCells().get(i);
-			subset.add(nc);
-		}
-		nestedbins.put(c, new Grid(c.x, c.y, c.width, c.height, subset));
-	}
-	println("2. Uniform grid created.");
+  nestedbins = getNestedBins(bins);
+  println("2. Uniform grid created.");
 
 	// bin dots to variable grid
 	Map<Cell,List<Dot>> dotsInBins = getDotsInBins(dots, bins);
 	println("3. Bin to variable grid ok.");
 
-	// bin dots to uniform grid (nested binning)
-	for(Cell c : nestedbins.keySet()){
-		List<Cell> nestedbinsInBin = (ArrayList) nestedbins.get(c).getCells();
-		List<Dot> dotsInBin = (ArrayList) dotsInBins.get(c);
-		// Distance matrix
-		float[] distMat = new float[nestedbinsInBin.size()];
-		for (Dot dot : dotsInBin) {
-			// Get distance to nested bins
-			for (int m=0; m<distMat.length; m++) distMat[m] = 9999;
-			for (int m=0; m<nestedbinsInBin.size(); m++) {
-				Cell nestedBin = (Cell) nestedbinsInBin.get(m);
-				distMat[m] = new PVector(nestedBin.x, nestedBin.y).dist(dot);
-			}
-			// Select nearest nested bin
-			if (min(distMat) == 9999) break;
-			int index = arrayMinIndex(distMat);
-			Cell nestedBin = (Cell) nestedbinsInBin.get(index);
-			// Add dot value to nested bin
-			if (this.values.containsKey(c)) {
-				Map<Cell,List<Integer>> valueSets = (HashMap) this.values.get(c);
-				if(valueSets.containsKey(nestedBin)){
-					List<Integer> valueSet = (ArrayList) valueSets.get(nestedBin);
-					valueSet.add(dot.v);
-				} else {
-					List<Integer> valueSet = new ArrayList();
-					valueSet.add(dot.v);
-					valueSets.put(nestedBin, valueSet);
-				}
-			} else {
-				Map<Cell,List<Integer>> valueSets = new HashMap();
-				List<Integer> valueSet = new ArrayList();
-				valueSet.add(dot.v);
-				valueSets.put(nestedBin, valueSet);
-				this.values.put(c, valueSets);
-			}
-		}
-	}
+  // bin dots to uniform grid (nested binning)
+  values = getDotsInNestedBins(nestedbins, dotsInBins);
 	println("4. Bin to uniform grid ok.");
 
-	// compute relative histograms
-	for(Cell bin : values.keySet()){
-		Map<Integer,Integer> visible_histogram = new HashMap();
-		Map<Integer,Integer> actual_histogram  = new HashMap();
-		for(Cell nestedbin : values.get(bin).keySet()){
-			List<Integer> values_in_nestedbin = values.get(bin).get(nestedbin);
-			// Add visible dot value to visible histogram
-			int visible_value = (Integer) values_in_nestedbin.get(values_in_nestedbin.size() - 1);
-			if(visible_histogram.containsKey(visible_value)){
-				int frequency = (Integer) visible_histogram.get(visible_value);
-				visible_histogram.put(visible_value, frequency + 1);
-			} else {
-				visible_histogram.put(visible_value, 1);
-			}
-			// Add all dot values to actual histogram
-			for(Integer value : values_in_nestedbin){
-				if(actual_histogram.containsKey(value)){
-				  int frequency = (Integer) actual_histogram.get(value);
-				  actual_histogram.put(value, frequency + 1);
-				} else {
-				  actual_histogram.put(value, 1);
-				}
-			}
-		}
-		visible.put(bin, visible_histogram);
-		actual.put(bin, actual_histogram);
-	}
-	println("5. Compute relative histogram ok.");
-
+  // compute actual histogram for each bin
+  Map<Cell,Map<Integer,Integer>> visible = getVisibleHistogram(values);
+  // compute visible histogram of each bin
+  Map<Cell,Map<Integer,Integer>> actual = getActualHistogram(values);
+	println("5. Compute histograms ok.");
 
 
   // Histogram equalization
@@ -174,7 +93,7 @@ void setup(){
     float scaleBy  = 1.0;
 
       // 1a. There are more dots than avaliable
-      //     nested bins and some dots are hidden.
+      //     nested bins, and some dots are hidden.
       //     The solution is then to occupy all
       //     avaliable nested bins. Histogram is
       //     thus scaled relative to the number of
@@ -285,6 +204,7 @@ void setup(){
         }
         rel_histogram.put(value, frequency);
       }
+
       // 2c1. Extract empty nested bins
       Set<Cell> empty_nested_bins = new HashSet();
       for(Cell nestedbin : nestedbins_in_bin.getCells()){
@@ -301,7 +221,7 @@ void setup(){
         if(frequency > 0){
           for(Cell nestedbin : values_in_bin.keySet()){
             List<Integer> values_in_nestedbin = (ArrayList) values_in_bin.get(nestedbin);
-            // 2d1. Summarize values
+            // 2c2a. Summarize values
             Map<Integer,Integer> value_summary = new HashMap();
             for(Integer value_in_nestedbin : values_in_nestedbin){
               if(value_summary.containsKey(value_in_nestedbin)){
@@ -311,7 +231,7 @@ void setup(){
                 value_summary.put(value_in_nestedbin, 1);
               }
             }
-            // 2d2. 
+            // 2c2b. Assign dots to nested bins
             if(value_summary.containsKey(value)){
               int frequency_of_value = (Integer) value_summary.get(value);
               if(frequency_of_value > 1){
